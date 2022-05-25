@@ -15,7 +15,7 @@ long long generateRandLong(){
 }
 bool testHashTable()
 {
-    const int iters = 500000;
+    const int iters = 5000;
     const int keysAmount = iters * 1;
 // generate random keys:
     long long* keys = new long long[keysAmount];
@@ -102,6 +102,9 @@ bool testHashTable()
 
 int main() {
     srand(time(nullptr));
-    testHashTable();
+    for(int i = 0;i<300;i++)
+    if(!(testHashTable())){
+       return 1;
+    }
     return 0;
 }

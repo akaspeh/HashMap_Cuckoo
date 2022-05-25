@@ -7,10 +7,11 @@
 #include "DynamicArr.h"
 
 class ArrayOfPrimeNum{
+private:
+    int oldsize = 1;
 public:
     DynamicArr<int> PrimeArray;
     void set_newArr(int sizeforArray){
-        static int oldsize = 1;
         int sizeOfArray = (sizeforArray) / 2 + 1;
         int *arr = new int[sizeOfArray];
         arr[0] = 2;
@@ -68,12 +69,9 @@ private:
         long long key;
     };
     void swap(HashSigment* a,HashSigment* b){
-        long long tempkey = a->key;
-        T tempvalue = a->data;
-        a->key = b->key;
-        a->data = b->data;
-        b->key = tempkey;
-        b->data = tempvalue;
+        HashSigment temp = *a;
+        *a = *b;
+        *b = temp;
     }
     ArrayOfPrimeNum PrimeArr;
 
@@ -103,7 +101,14 @@ private:
         for (int j = 0; j < 4; j++) {
             for (int i = 0; i < oldarrlen; i++) {
                 if (array[j][i].Empty == 0) {
-                    insertforNewArr(array[j][i].key, array[j][i].data, new_arr);
+                    if(insertforNewArr(array[j][i].key, array[j][i].data, new_arr)){
+                        rehash(array);
+                        for(int i = 0;i<4;i++){
+                            delete [] new_arr[i];
+                        }
+                        delete [] new_arr;
+                        return;
+                    }
                 }
             }
         }
@@ -113,11 +118,8 @@ private:
         }
         delete[] array;
         array = new_arr;
-
-
     }
-    void rehash() {
-        static bool flag = 0;
+    void rehash(HashSigment** arr) {
         HashSigment **new_arr = new HashSigment *[4];
         for (int i = 0; i < 4; i++)
             array[i] = new HashSigment[arrlen];
@@ -128,9 +130,19 @@ private:
         for (int j = 0; j < 4; j++) {
             for (int i = 0; i < arrlen; i++) {
                 if (array[j][i].Empty == 0) {
-                    insertforNewArr(array[j][i].key, array[j][i].data, new_arr);
+                    if(insertforNewArr(array[j][i].key, array[j][i].data, new_arr)){
+                        rehash(arr);
+                        for(int i = 0;i<4;i++){
+                            delete [] new_arr[i];
+                        }
+                        delete [] new_arr;
+                        return;
+                    }
                 }
             }
+        }
+        for(int i = 0;i<4;i++){
+            delete [] array[i];
         }
         delete[] array;
         array = new_arr;
@@ -146,20 +158,24 @@ private:
             case 3: return (long long)(fi*key) % arrlen;
         }
     }
-    void insertforNewArr(long long key,const T& value,HashSigment** arr){
+    bool insertforNewArr(long long key,const T& value,HashSigment** arr){
         HashSigment A{value,0,key};
 
-        for(int i = 0; i < 4; i++){
-            long long index = hash(key,i);
-            if(arr[i][index].Empty == 1){
-                arr[i][index]=A;
-                return;
+        for(int count = 0;;count++) {
+            if (count == (int) log2f(arrlen*4)) {
+                return 1;
             }
+            for (int i = 0; i < 4; i++) {
+                long long index = hash(A.key, i);
+                if (arr[i][index].Empty == 1) {
+                    arr[i][index] = A;
+                    return 0;
+                }
+            }
+            int randplace = rand()%4;
+            long long index = hash(A.key,randplace);
+            swap(&arr[randplace][index],&A);
         }
-        int randplace = rand()%4;
-        long long index = hash(key,randplace);
-        swap(&arr[randplace][index],&A);
-        insertforNewArr(A.key, A.data,arr);
     }
 public:
     HashMap():b(rand()%20 + 1),f((float)(rand())/RAND_MAX){
@@ -170,6 +186,9 @@ public:
     }
 
     ~HashMap(){
+        for(int i = 0;i<4;i++){
+            delete [] array[i];
+        }
         delete [] array;
     }
 
@@ -187,19 +206,19 @@ public:
 
         for(int count = 0;;count++) {
             if (count == (int) log2f(arrlen*4)) {
-                rehash();
-                insert(key, value);
-                return;
+                rehash(array);
+                count = 0;
+                continue;
             }
             for (int i = 0; i < 4; i++) {
-                long long index = hash(key, i);
+                long long index = hash(A.key, i);
                 if (array[i][index].key == key and array[i][index].Empty == 0) {
                     array[i][index] = A;
                     return;
                 }
             }
             for (int i = 0; i < 4; i++) {
-                long long index = hash(key, i);
+                long long index = hash(A.key, i);
                 if (array[i][index].Empty == 1) {
                     size++;
                     array[i][index] = A;
@@ -207,7 +226,7 @@ public:
                 }
             }
             int randplace = rand()%4;
-            long long index = hash(key,randplace);
+            long long index = hash(A.key,randplace);
             swap(&array[randplace][index],&A);
         }
     }
@@ -216,7 +235,7 @@ public:
         for(int i = 0; i < 4; i++){
             long long index = hash(key,i);
             if(array[i][index].key == key and array[i][index].Empty == 0){
-                size = size-1;
+                size--;
                 array[i][index].Empty = 1;
                 return;
             }
