@@ -1,12 +1,10 @@
 
-#ifndef HASHMAPPARALLEL_HASHMAP_H
-#define HASHMAPPARALLEL_HASHMAP_H
+#ifndef HashMap_Cuckoo_HASHMAP_H
+#define HashMap_Cuckoo_HASHMAP_H
 
 #include <iostream>
 #include <cmath>
 #include "DynamicArr.h"
-#include <thread>
-#include <queue>
 
 class ArrayOfPrimeNum{
 public:
@@ -235,4 +233,4 @@ public:
         return nullptr;
     }
 };
-#endif //HASHMAPPARALLEL_HASHMAP_H
+#endif //HashMap_Cuckoo_HASHMAP_H

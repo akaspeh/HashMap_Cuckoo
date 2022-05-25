@@ -2,8 +2,8 @@
 // Created by PC on 18.05.2022.
 //
 
-#ifndef HASHMAPPARALLEL_DYNAMICARR_H
-#define HASHMAPPARALLEL_DYNAMICARR_H
+#ifndef HashMap_Cuckoo_DYNAMICARR_H
+#define HashMap_Cuckoo_DYNAMICARR_H
 #include <iostream>
 
 template <class T>
@@ -134,4 +134,4 @@ public:
         }
     }
 };
-#endif //HASHMAPPARALLEL_DYNAMICARR_H
+#endif //HashMap_Cuckoo_DYNAMICARR_H
