@@ -74,7 +74,7 @@ private:
         *b = temp;
     }
     ArrayOfPrimeNum PrimeArr;
-
+    int count = 0;
     int a = 2 , b;
     float f;
     int size=0;
@@ -102,11 +102,11 @@ private:
             for (int i = 0; i < oldarrlen; i++) {
                 if (array[j][i].Empty == 0) {
                     if(insertforNewArr(array[j][i].key, array[j][i].data, new_arr)){
-                        rehash(array);
                         for(int i = 0;i<4;i++){
                             delete [] new_arr[i];
                         }
                         delete [] new_arr;
+                        rehash(array);
                         return;
                     }
                 }
@@ -131,11 +131,11 @@ private:
             for (int i = 0; i < arrlen; i++) {
                 if (array[j][i].Empty == 0) {
                     if(insertforNewArr(array[j][i].key, array[j][i].data, new_arr)){
-                        rehash(arr);
                         for(int i = 0;i<4;i++){
                             delete [] new_arr[i];
                         }
                         delete [] new_arr;
+                        rehash(arr);
                         return;
                     }
                 }
@@ -161,21 +161,22 @@ private:
     bool insertforNewArr(long long key,const T& value,HashSigment** arr){
         HashSigment A{value,0,key};
 
-        for(int count = 0;;count++) {
-            if (count == (int) log2f(arrlen*4)) {
-                return 1;
-            }
-            for (int i = 0; i < 4; i++) {
-                long long index = hash(A.key, i);
-                if (arr[i][index].Empty == 1) {
-                    arr[i][index] = A;
-                    return 0;
-                }
-            }
-            int randplace = rand()%4;
-            long long index = hash(A.key,randplace);
-            swap(&arr[randplace][index],&A);
+        if (count == (int) log2f(arrlen*4)) {
+            return 1;
         }
+        count++;
+        for (int i = 0; i < 4; i++) {
+            long long index = hash(A.key, i);
+            if (arr[i][index].Empty == 1) {
+                arr[i][index] = A;
+                count = 0;
+                return 0;
+            }
+        }
+        int randplace = rand()%4;
+        long long index = hash(A.key,randplace);
+        swap(&arr[randplace][index],&A);
+        insertforNewArr(key,value,arr);
     }
 public:
     HashMap():b(rand()%20 + 1),f((float)(rand())/RAND_MAX){
@@ -197,38 +198,39 @@ public:
     }
 
     void insert(long long key,const T& value){
+        if (count == (int) log2f(arrlen*4)) {
+            rehash(array);
+            insert(key,value);
+            return;
+        }
+        count++;
         coefload = (float)size/(float)arrlen*4;
         if(coefload>0.5){
             resize_arr();
         }
-
         HashSigment A{value,0,key};
 
-        for(int count = 0;;count++) {
-            if (count == (int) log2f(arrlen*4)) {
-                rehash(array);
+        for (int i = 0; i < 4; i++) {
+            long long index = hash(A.key, i);
+            if (array[i][index].key == key and array[i][index].Empty == 0) {
+                array[i][index] = A;
                 count = 0;
-                continue;
+                return;
             }
-            for (int i = 0; i < 4; i++) {
-                long long index = hash(A.key, i);
-                if (array[i][index].key == key and array[i][index].Empty == 0) {
-                    array[i][index] = A;
-                    return;
-                }
-            }
-            for (int i = 0; i < 4; i++) {
-                long long index = hash(A.key, i);
-                if (array[i][index].Empty == 1) {
-                    size++;
-                    array[i][index] = A;
-                    return;
-                }
-            }
-            int randplace = rand()%4;
-            long long index = hash(A.key,randplace);
-            swap(&array[randplace][index],&A);
         }
+        for (int i = 0; i < 4; i++) {
+            long long index = hash(A.key, i);
+            if (array[i][index].Empty == 1) {
+                size++;
+                array[i][index] = A;
+                count = 0;
+                return;
+            }
+        }
+        int randplace = rand()%4;
+        long long index = hash(A.key,randplace);
+        swap(&array[randplace][index],&A);
+        insert(A.key,A.data);
     }
 
     void erase(long long key){
