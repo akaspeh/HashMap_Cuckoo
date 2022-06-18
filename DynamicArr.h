@@ -79,7 +79,7 @@ public:
             return nullptr;
         }
         else{
-            return Array[N];
+            return &Array[N];
         }
     }
     int size(){

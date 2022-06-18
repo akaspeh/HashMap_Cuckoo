@@ -78,7 +78,7 @@ private:
     int a = 2 , b;
     float f;
     int size=0;
-    int arrlen=3;
+    int arrlen=1001;
 
 
     float coefload=(float)size/(float)arrlen;
@@ -100,15 +100,8 @@ private:
 
         for (int j = 0; j < 4; j++) {
             for (int i = 0; i < oldarrlen; i++) {
-                if (array[j][i].Empty == 0) {
-                    if(insertforNewArr(array[j][i].key, array[j][i].data, new_arr)){
-                        for(int i = 0;i<4;i++){
-                            delete [] new_arr[i];
-                        }
-                        delete [] new_arr;
-                        rehash(array);
-                        return;
-                    }
+                if ((array[j][i]).Empty == 0) {
+                    (insertforNewArr((array[j][i]).key, (array[j][i].data, new_arr)));
                 }
             }
         }
@@ -119,34 +112,35 @@ private:
         delete[] array;
         array = new_arr;
     }
-    void rehash(HashSigment** arr) {
+
+    bool rehash() {
         HashSigment **new_arr = new HashSigment *[4];
         for (int i = 0; i < 4; i++)
-            array[i] = new HashSigment[arrlen];
+            new_arr[i] = new HashSigment[arrlen];
 
         f = ((float) (rand()) / RAND_MAX);
         b = rand() % 20 + 1;
         a = PrimeArr.FindNearest(rand() % 20);
         for (int j = 0; j < 4; j++) {
             for (int i = 0; i < arrlen; i++) {
-                if (array[j][i].Empty == 0) {
-                    if(insertforNewArr(array[j][i].key, array[j][i].data, new_arr)){
+                if ((array[j][i]).Empty == 0) {
+                    if(insertforNewArr((array[j][i]).key,(array[j][i]).data,new_arr)){
                         for(int i = 0;i<4;i++){
                             delete [] new_arr[i];
                         }
-                        delete [] new_arr;
-                        rehash(arr);
-                        return;
+                        delete[] new_arr;
+                        rehash();
                     }
                 }
             }
         }
+        std::cout << "end REHASH";
         for(int i = 0;i<4;i++){
             delete [] array[i];
         }
         delete[] array;
         array = new_arr;
-        return;
+        return 1;
     }
     long long hash(long long key,int i)
     {
@@ -154,20 +148,21 @@ private:
         switch(i){
             case 0: return ((a * key + b) % 9149658775000477) % arrlen;
             case 1: return (long long)(fmod(f*(float)key,1.0) * arrlen);
-            case 2: return key % arrlen;
-            case 3: return (long long)(fi*key) % arrlen;
+            case 2: return key/b*a % arrlen;
+            case 3: return (long long)((fi*key)*f) % arrlen;
         }
     }
-    bool insertforNewArr(long long key,const T& value,HashSigment** arr){
+    bool insertforNewArr(long long key,const T value,HashSigment** arr){
         HashSigment A{value,0,key};
 
         if (count == (int) log2f(arrlen*4)) {
+            count = 0;
             return 1;
         }
         count++;
         for (int i = 0; i < 4; i++) {
             long long index = hash(A.key, i);
-            if (arr[i][index].Empty == 1) {
+            if ((arr[i][index]).Empty == 1) {
                 arr[i][index] = A;
                 count = 0;
                 return 0;
@@ -179,11 +174,12 @@ private:
         insertforNewArr(key,value,arr);
     }
 public:
+
     HashMap():b(rand()%20 + 1),f((float)(rand())/RAND_MAX){
         PrimeArr.set_newArr(arrlen*4);
         a = PrimeArr.FindNearest(rand()%20);
         for (int i = 0; i < 4; i++)
-            array[i] = new HashSigment[3];
+            array[i] = new HashSigment[arrlen];
     }
 
     ~HashMap(){
@@ -199,12 +195,15 @@ public:
 
     void insert(long long key,const T& value){
         if (count == (int) log2f(arrlen*4)) {
-            rehash(array);
+            std::cout << "REHASH";
+            count = 0;
+            while(rehash() != 1);
+            std::cout << "REHASH-insert";
             insert(key,value);
             return;
         }
         count++;
-        coefload = (float)size/(float)arrlen*4;
+        coefload = (float)size/(float)(arrlen*4);
         if(coefload>0.5){
             resize_arr();
         }
@@ -212,15 +211,15 @@ public:
 
         for (int i = 0; i < 4; i++) {
             long long index = hash(A.key, i);
-            if (array[i][index].key == key and array[i][index].Empty == 0) {
-                array[i][index] = A;
+            if ((array[i][index]).key == key and (array[i][index]).Empty == 0) {
+                (array[i][index]) = A;
                 count = 0;
                 return;
             }
         }
         for (int i = 0; i < 4; i++) {
             long long index = hash(A.key, i);
-            if (array[i][index].Empty == 1) {
+            if ((array[i][index]).Empty == 1) {
                 size++;
                 array[i][index] = A;
                 count = 0;
@@ -236,9 +235,9 @@ public:
     void erase(long long key){
         for(int i = 0; i < 4; i++){
             long long index = hash(key,i);
-            if(array[i][index].key == key and array[i][index].Empty == 0){
+            if((array[i][index]).key == key and (array[i][index]).Empty == 0){
                 size--;
-                array[i][index].Empty = 1;
+                (array[i][index]).Empty = 1;
                 return;
             }
         }
@@ -247,8 +246,8 @@ public:
     T* find(long long key){
         for(int i = 0; i < 4; i++) {
             long long index = hash(key, i);
-            if(array[i][index].key == key and array[i][index].Empty == 0) {
-                return &array[i][index].data;
+            if((array[i][index]).key == key and (array[i][index]).Empty == 0) {
+                return &(array[i][index]).data;
             }
         }
         return nullptr;
